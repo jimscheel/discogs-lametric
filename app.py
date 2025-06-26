@@ -7,19 +7,30 @@ app = Flask(__name__)
 BASE_URL_TEMPLATE = "https://api.discogs.com/users/{username}/collection/folders/0/releases"
 
 def get_collection(username, token):
-    response = requests.get(
-        BASE_URL_TEMPLATE.format(username=username),
-        params={
-            "token": token,
-            "per_page": 100,
-            "page": 1,
-            "sort": "added",
-            "sort_order": "desc"
-        }
-    )
-    response.raise_for_status()
-    data = response.json()
-    return data.get("releases", [])
+    releases = []
+    page = 1
+
+    while True:
+        response = requests.get(
+            BASE_URL_TEMPLATE.format(username=username),
+            params={
+                "token": token,
+                "per_page": 100,
+                "page": page,
+                "sort": "added",
+                "sort_order": "desc"
+            }
+        )
+        response.raise_for_status()
+        data = response.json()
+        page_releases = data.get("releases", [])
+        releases.extend(page_releases)
+
+        if "next" not in data.get("pagination", {}).get("urls", {}):
+            break
+        page += 1
+
+    return releases
 
 @app.route("/discogs/latest")
 def latest():
