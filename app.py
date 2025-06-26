@@ -6,7 +6,14 @@ app = Flask(__name__)
 
 def get_collection(username, token):
     url = f"https://api.discogs.com/users/{username}/collection/folders/0/releases"
-    response = requests.get(url, params={"token": token, "per_page": 100, "page": 1})
+    params = {
+        "token": token,
+        "per_page": 100,
+        "page": 1,
+        "sort": "added",
+        "sort_order": "desc"
+    }
+    response = requests.get(url, params=params)
     response.raise_for_status()
     data = response.json()
     return data.get("releases", [])
