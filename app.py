@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request
 import requests
 import random
 import datetime
+from collections import Counter
 
 app = Flask(__name__)
 
@@ -37,7 +38,6 @@ def random_album():
     username = request.args.get("username")
     token = request.args.get("token")
     releases = get_collection(username, token)
-    # Brug dagsdato som seed for deterministisk valg
     random.seed(datetime.date.today().isoformat())
     album_info = random.choice(releases)["basic_information"]
     artist = album_info["artists"][0]["name"]
@@ -51,9 +51,41 @@ def random_album():
 def count():
     username = request.args.get("username")
     token = request.args.get("token")
-    url = f"https://api.discogs.com/users/{username}/collection/folders/0/releases"
-    response = requests.get(url, params={"token": token})
-    response.raise_for_status()
-    data = response.json()
-    total = data.get("pagination", {}).get("items", 0)
-    return jsonify({"frames": [{"text": f"Du har {total} plader", "icon": "i3333"}]})
+    all_releases = []
+    page = 1
+    while True:
+        url = f"https://api.discogs.com/users/{username}/collection/folders/0/releases"
+        params = {
+            "token": token,
+            "per_page": 100,
+            "page": page,
+            "sort": "added",
+            "sort_order": "desc"
+        }
+        response = requests.get(url, params=params)
+        response.raise_for_status()
+        data = response.json()
+        releases = data.get("releases", [])
+        all_releases.extend(releases)
+        if page >= data.get("pagination", {}).get("pages", 1):
+            break
+        page += 1
+
+    counter = Counter()
+    for release in all_releases:
+        formats = release.get("basic_information", {}).get("formats", [])
+        if formats:
+            name = formats[0].get("name", "").lower()
+            if name in ["vinyl", "cd", "cassette"]:
+                counter[name] += 1
+
+    parts = []
+    if counter["vinyl"] > 0:
+        parts.append(f"VINYL={counter['vinyl']}")
+    if counter["cd"] > 0:
+        parts.append(f"CD={counter['cd']}")
+    if counter["cassette"] > 0:
+        parts.append(f"CASSETTE={counter['cassette']}")
+
+    text = "TOTAL MEDIA: " + " ".join(parts)
+    return jsonify({"frames": [{"text": text, "icon": "68832"}]})
