@@ -36,10 +36,13 @@ def random_album():
     username = request.args.get("username")
     token = request.args.get("token")
     releases = get_collection(username, token)
-    album = random.choice(releases)["basic_information"]
-    artist = album["artists"][0]["name"]
-    title = album["title"]
-    return jsonify({"frames": [{"text": f"{artist} – {title}", "icon": "i2222"}]})
+    album_info = random.choice(releases)["basic_information"]
+    artist = album_info["artists"][0]["name"]
+    title = album_info["title"]
+    format_info = album_info.get("formats", [{}])[0]
+    media_type = format_info.get("name", "Unknown")
+    text = f"RANDOM ALBUM FROM COLLECTION: {artist} – {title} ({media_type})"
+    return jsonify({"frames": [{"text": text, "icon": "68832"}]})
 
 @app.route("/discogs/count")
 def count():
