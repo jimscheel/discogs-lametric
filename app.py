@@ -26,7 +26,10 @@ def latest():
     latest = releases[0]["basic_information"]
     artist = latest["artists"][0]["name"]
     title = latest["title"]
-    return jsonify({"frames": [{"text": f"{artist} – {title}", "icon": "i1234"}]})
+    format_info = latest.get("formats", [{}])[0]
+    media_type = format_info.get("name", "Unknown")
+    text = f"LATEST MEDIA TO COLLECTION: {artist} – {title} ({media_type})"
+    return jsonify({"frames": [{"text": text, "icon": "68832"}]})
 
 @app.route("/discogs/random")
 def random_album():
