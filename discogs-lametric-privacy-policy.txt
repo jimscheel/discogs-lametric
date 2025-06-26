@@ -1,0 +1,9 @@
+# Privacy Policy for Discogs LaMetric Apps
+
+This LaMetric app does not collect, store, or share any personal information.
+
+All data displayed is fetched live from the public Discogs API using user-provided credentials (Discogs username and API token). These credentials are not stored, logged, or shared by the app provider.
+
+The app is open-source and hosted via Render.com using HTTPS, and only transmits data directly to LaMetric devices from the Discogs API.
+
+For questions, please contact: Jimmy Scheel Fjeldbonde
