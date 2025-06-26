@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 import requests
 import random
+import datetime
 
 app = Flask(__name__)
 
@@ -36,12 +37,14 @@ def random_album():
     username = request.args.get("username")
     token = request.args.get("token")
     releases = get_collection(username, token)
+    # Brug dagsdato som seed for deterministisk valg
+    random.seed(datetime.date.today().isoformat())
     album_info = random.choice(releases)["basic_information"]
     artist = album_info["artists"][0]["name"]
     title = album_info["title"]
     format_info = album_info.get("formats", [{}])[0]
     media_type = format_info.get("name", "Unknown")
-    text = f"RANDOM ALBUM FROM COLLECTION: {artist} – {title} ({media_type})"
+    text = f"TODAYS RANDOM ALBUM: {artist} – {title} ({media_type})"
     return jsonify({"frames": [{"text": text, "icon": "68832"}]})
 
 @app.route("/discogs/count")
