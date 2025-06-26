@@ -105,7 +105,8 @@ def count():
         counts = {}
 
         for release in releases:
-            formats = release.get("formats", [])
+            basic = release.get("basic_information", {})
+            formats = basic.get("formats", [])
             for fmt in formats:
                 fmt_name = fmt.get("name", "").lower()
                 desc = fmt.get("descriptions", [])
